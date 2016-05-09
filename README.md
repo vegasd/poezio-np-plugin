@@ -25,7 +25,8 @@ which will be appended to the end of this message: `/np , мне нравитс�
 
 ## Standalone usage
 
-You can just run `./np.py`. To get now-playing message to your stdout.
+You need Python 3 to be installed. Then you can just run `./np.py` to get
+now-playing message to your stdout.
 
 To get it in your clipboard you can do something like
 
