@@ -135,12 +135,7 @@ def guess_reltype(t):
 
 
 def get_from(t):
-    if t["reltype"]:
-        reltype = t["reltype"].lower()
-    else:
-        reltype = guess_reltype(t).lower()
-
-    rtypes = {"demo": "демо",
+    RTYPES = {"demo": "демо",
               "anthology": "антологии",
               "ep": "EP",
               "album": "альбома",
@@ -149,10 +144,15 @@ def get_from(t):
               "collaboration": "совместного альбома",
               "single": "сингла"}
 
-    if reltype in rtypes:
-        rel = rtypes[reltype]
+    if t["reltype"]:
+        reltype = t["reltype"].lower()
+    else:
+        reltype = guess_reltype(t).lower()
+
+    if reltype in RTYPES:
+        relstring = RTYPES[reltype]
     elif t["reltype"]:
-        rel = t["reltype"]
+        relstring = t["reltype"]
 
     noname = isalbumnoname(t)
     samename = isalbumsamename(t)
@@ -167,12 +167,14 @@ def get_from(t):
 
     # Прилагательные
     if samename:
-        result.append("одноименной" if isfaminine(rel) else "одноименного")
+        result.append("одноименной" if isfaminine(relstring)
+                      else "одноименного")
     if noname:
-        result.append("безымянной" if isfaminine(rel) else "безымянного")
+        result.append("безымянной" if isfaminine(relstring)
+                      else "безымянного")
 
     # Существительное
-    result.append(rel)
+    result.append(relstring)
 
     # Дополнение (для сплитов)
     if reltype == "split":
