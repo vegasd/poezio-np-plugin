@@ -35,7 +35,7 @@ else:
 # }}} Only for poezio plugin
 
 
-def isfaminine(word):
+def isfeminine(word):
     if word in ("антологии", "песню",
                 "композицию", "инструментальную композицию"):
         return True
@@ -46,16 +46,16 @@ def isfaminine(word):
 def get_np_info():
     # TODO: use dbus here except of runnig a shell command
     cmd = 'deadbeef --nowplaying-tf "{}"'
-    options = ("artist", "title", "year", "genre", "albumartist",
+    OPTIONS = ("artist", "title", "year", "genre", "albumartist",
                "album", "composer", "comment", "releasetype",
                "playback_time_remaining_seconds", "length_seconds")
     DELIMITER = " -=- "
-    fmt = DELIMITER.join("%{}%".format(x) for x in options)
+    fmt = DELIMITER.join("%{}%".format(x) for x in OPTIONS)
     out, err = Popen(cmd.format(fmt), shell=True,
                      stdout=PIPE, stderr=PIPE).communicate()
     x = out.decode("utf-8").split(DELIMITER)
     t = {}
-    for field in options:
+    for field in OPTIONS:
         t[field] = x.pop(0)
     t["reltype"] = t["releasetype"]
     return t
@@ -97,12 +97,12 @@ def get_what(t):
 
     if istracknoname(t):
         if st not in ("интро", "аутро"):
-            nn = "безымянную " if isfaminine(st) else "безымянный "
+            nn = "безымянную " if isfeminine(st) else "безымянный "
         else:
             nn = ""
         return nn + st
     elif istracksamename(t):
-        nn = "одноименную " if isfaminine(st) else "одноименный "
+        nn = "одноименную " if isfeminine(st) else "одноименный "
         return nn + st
     else:
         return " ".join((st, "«{}»".format(t["title"])))
@@ -167,10 +167,10 @@ def get_from(t):
 
     # Прилагательные
     if samename:
-        result.append("одноименной" if isfaminine(relstring)
+        result.append("одноименной" if isfeminine(relstring)
                       else "одноименного")
     if noname:
-        result.append("безымянной" if isfaminine(relstring)
+        result.append("безымянной" if isfeminine(relstring)
                       else "безымянного")
 
     # Существительное
@@ -203,8 +203,8 @@ def get_np_message(t):
                "композицию «{title}» в исполнении {artist} {year} года")
 
     t["action"] = "слушает"
-    t['what'] = get_what(t)
-    t['from'] = get_from(t)
+    t["what"] = get_what(t)
+    t["from"] = get_from(t)
 
     # TODO:
     # if float(t["playback_time_remaining_seconds"]) < 30 \
