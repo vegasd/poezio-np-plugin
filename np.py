@@ -186,7 +186,7 @@ def get_from(t):
         if s:
             result.append("с " + s)
 
-    # Назвние
+    # Название
     if not noname and not samename:
         if reltype == "split":
             result.append("под названием")
@@ -219,7 +219,7 @@ def get_np_message(t):
     else:
         if albyear == cur_year - 1:
             t["year"] = "прошлого"
-        elif albyear == cur_year - 1:
+        elif albyear == cur_year - 2:
             t["year"] = "позапрошлого"
 
     res = "{action} {artist}, {what} {from} {year} года"
