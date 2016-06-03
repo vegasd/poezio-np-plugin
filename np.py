@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from subprocess import Popen, PIPE
-from datetime import date
+from datetime import date, datetime
 
 # {{{ Only for poezio plugin
 try:
@@ -48,7 +48,8 @@ def get_np_info():
     cmd = 'deadbeef --nowplaying-tf "{}"'
     OPTIONS = ("artist", "title", "year", "genre", "albumartist",
                "album", "composer", "comment", "releasetype",
-               "playback_time_remaining_seconds", "length_seconds")
+               "playback_time_remaining_seconds", "length_seconds",
+               "releasedate")
     DELIMITER = " -=- "
     fmt = DELIMITER.join("%{}%".format(x) for x in OPTIONS)
     out, err = Popen(cmd.format(fmt), shell=True,
@@ -195,22 +196,8 @@ def get_from(t):
     return " ".join(result)
 
 
-def get_np_message(t):
-    if t is None:
-        return "/me ничего не слушает"
-    if 'clas' in t['genre'].lower():
-        res = ("{action} {composer}, " +
-               "композицию «{title}» в исполнении {artist} {year} года")
-
-    t["action"] = "слушает"
-    t["what"] = get_what(t)
-    t["from"] = get_from(t)
-
-    # TODO:
-    # if float(t["playback_time_remaining_seconds"]) < 30 \
-    #         and float(t["length_seconds"]) > 120:
-    #     t["action"] = "дослушивает"
-
+def get_when(t):
+    # FIXME: this function is too complex and ugly
     cur_year = date.today().year
     try:
         albyear = int(t["year"])
@@ -222,7 +209,52 @@ def get_np_message(t):
         elif albyear == cur_year - 2:
             t["year"] = "позапрошлого"
 
-    res = "{action} {artist}, {what} {from} {year} года"
+    when = " {} года".format(t["year"])
+    reldate = t.get("releasedate")
+    if reldate:
+        try:
+            reldate = datetime.strptime(reldate, "%Y-%m-%d")
+        except:
+            reldate = None
+    if reldate:
+        today = date.today()
+        if today.month == reldate.month:
+            if today.day < reldate.day:
+                when = ", который ещё не вышел"
+            elif today.day - reldate.day == 0:
+                when = ", вышедшего сегодня"
+            elif today.day - reldate.day == 1:
+                when = ", вышедшего вчера"
+            elif today.day - reldate.day == 2:
+                when = ", вышедшего позавчера"
+            else:
+                _, thisweek, _ = today.isocalendar()
+                _, relweek, _ = reldate.isocalendar()
+                if thisweek == relweek:
+                    when = ", вышедшего на этой неделе"
+                elif thisweek - relweek == 1:
+                    when = ", вышедшего на прошлой неделе"
+    return when
+
+
+def get_np_message(t):
+    if t is None:
+        return "/me ничего не слушает"
+    if 'clas' in t['genre'].lower():
+        res = ("{action} {composer}, " +
+               "композицию «{title}» в исполнении {artist} {year} года")
+
+    t["action"] = "слушает"
+    t["what"] = get_what(t)
+    t["from"] = get_from(t)
+    t["when"] = get_when(t)
+
+    # TODO:
+    # if float(t["playback_time_remaining_seconds"]) < 30 \
+    #         and float(t["length_seconds"]) > 120:
+    #     t["action"] = "дослушивает"
+
+    res = "{action} {artist}, {what} {from}{when}"
     return "/me " + res.format(**t)
 
 
