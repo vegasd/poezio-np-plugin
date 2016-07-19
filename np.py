@@ -132,6 +132,8 @@ def guess_reltype(t):
         return "Collaboration"
     if 0 < t['albumartist'].count(" & ") < 5:
         return "Split"
+    if "class" in t['genre'].lower():
+        return "None"
     return "Album"
 
 
@@ -243,6 +245,8 @@ def get_np_message(t):
     if 'clas' in t['genre'].lower():
         res = ("{action} {composer}, " +
                "композицию «{title}» в исполнении {artist} {year} года")
+    else:
+        res = "{action} {artist}, {what} {from}{when}"
 
     t["action"] = "слушает"
     t["what"] = get_what(t)
@@ -254,7 +258,6 @@ def get_np_message(t):
     #         and float(t["length_seconds"]) > 120:
     #     t["action"] = "дослушивает"
 
-    res = "{action} {artist}, {what} {from}{when}"
     return "/me " + res.format(**t)
 
 
